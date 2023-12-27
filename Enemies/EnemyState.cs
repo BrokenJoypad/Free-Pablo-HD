@@ -8,12 +8,10 @@ public class EnemyState : MonoBehaviour
     [SerializeField] private bool EnemyMoving;
     [SerializeField] private bool EnemySearching;
 
-     private MoveTowardsTarget MoveTowardsTarget;
-     private PatrolBehaviour PatrolBehaviour;
+     private EnemyBehaviour EnemyBehaviour;
     void Start()
     {
-        MoveTowardsTarget = GetComponent<MoveTowardsTarget>();
-        PatrolBehaviour = GetComponent<PatrolBehaviour>();
+        EnemyBehaviour = GetComponent<EnemyBehaviour>();
     }
 
     // Update is called once per frame
@@ -21,13 +19,13 @@ public class EnemyState : MonoBehaviour
     {
 
         // Check All Possible Scripts that could mean the enemy is moving around.
-        if (MoveTowardsTarget.returnMoveState() == true){
+        if (EnemyBehaviour.returnMoveState() == true){
             EnemyMoving = true;
         } else{
             EnemyMoving = false;
         }
 
-        if(PatrolBehaviour.returnSearchState() == true){
+        if(EnemyBehaviour.returnSearchState() == true){
             EnemySearching = true;
         } else{
             EnemySearching = false;

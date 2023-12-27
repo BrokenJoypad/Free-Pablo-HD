@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyBehaviour : MonoBehaviour
+public class SlimeBehaviour : MonoBehaviour
 {
     private Rigidbody rb;
     private CheckAreaCollider checkAreaCollider;
