@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SlimeBehaviour : MonoBehaviour
+public class EnemyBehaviour : MonoBehaviour
 {
     private Rigidbody rb;
     private CheckAreaCollider checkAreaCollider;
@@ -39,6 +39,13 @@ public class SlimeBehaviour : MonoBehaviour
         Patrol();
         MoveTowardsTarget();
 
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject != null)
+            searchTimer = 0f;
+            searchForNewPatrolTarget();
     }
 
     void MoveTowardsTarget()
