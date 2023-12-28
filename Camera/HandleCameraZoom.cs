@@ -23,17 +23,39 @@ public class HandleCameraZoom : MonoBehaviour
 
         CurrentFov = CinemachineCamera.m_Lens.FieldOfView;
 
-        if(Input.mouseScrollDelta.y == 1){
+        if (Input.mouseScrollDelta.y == 1){
             CameraZoom = 1;
             if(CameraZoom == 1){
-                CinemachineCamera.m_Lens.FieldOfView = Mathf.Lerp(CurrentFov, ZoomedInFOVTarget, Time.deltaTime * 30);
+                StartCoroutine(IncrementTowardsTargetFOV());
             }
         } else if(Input.mouseScrollDelta.y == -1){
             CameraZoom = -1;
-            if (Input.mouseScrollDelta.y == -1){
-                CinemachineCamera.m_Lens.FieldOfView = Mathf.Lerp(CurrentFov, DefaultFOV, Time.deltaTime * 30);
+            if (CameraZoom == -1){
+                StartCoroutine(DecrementTowardsDefaultFOV());
             }
         }
+    }
+
+    IEnumerator IncrementTowardsTargetFOV()
+    {
+        while (CurrentFov > ZoomedInFOVTarget)
+            {
+                CinemachineCamera.m_Lens.FieldOfView -= 100f * Time.deltaTime;
+                yield return null;
+            
+            }
+
+    }
+
+    IEnumerator DecrementTowardsDefaultFOV()
+    {
+        while (CurrentFov < DefaultFOV)
+        {
+            CinemachineCamera.m_Lens.FieldOfView += 100f * Time.deltaTime;
+            yield return null;
+
+        }
+
     }
 
 }
