@@ -42,9 +42,15 @@ public class GameCursor : MonoBehaviour
         if(Physics.Raycast(ray, out hit, Mathf.Infinity, invertedLayerMask)){
             if (hit.rigidbody != null){
                 hitObject = hit.rigidbody.gameObject;
-                PhysicalMousePosition = new Vector3(hit.point.x, hit.point.y, hit.point.z);
+                PhysicalMousePosition = hit.point;
                 Debug.DrawLine(ray.origin, PhysicalMousePosition, Color.green);
-            }   
+            }
+            else if(hit.collider != null)
+            {
+                hitObject = hit.collider.gameObject;
+                PhysicalMousePosition = hit.point;
+                Debug.DrawLine(ray.origin, PhysicalMousePosition, Color.blue);
+            }
         }
     }
 
