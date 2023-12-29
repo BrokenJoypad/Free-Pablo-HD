@@ -15,21 +15,19 @@ public class CreateMovementIndicator : MonoBehaviour
     private GameObject newMovePrefab;
     private GameCursor gameCursor;
     private GameObject playerTarget;
-    private IsPlayerAttacking isPlayerAttacking;
 
     void Start()
     {
         gameCursor = GameCursor.Instance;
-        isPlayerAttacking = Player.GetComponent<IsPlayerAttacking>();
     }
 
     void Update()
     {
-        playerTarget = isPlayerAttacking.ReturnPlayerTarget();
+        playerTarget = gameCursor.GetHitGameObject();
 
         if (Input.GetButton("LClick"))
         {
-            if (playerTarget != null)
+            if (playerTarget != null && playerTarget.name != "Environment__Ground")
             {
                 indicatorSpawnPosition = playerTarget.transform.position;
             }

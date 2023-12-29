@@ -8,11 +8,11 @@ public class PlayerState : MonoBehaviour
     [SerializeField] private bool PlayerMoving = false;
     [SerializeField] private bool PlayerAttacking = false;
     
-    private IsPlayerAttacking isPlayerAttacking;
+    private PlayerMovement playerMovement;
     private Vector3 LastPlayerPosition;
 
     void Start(){
-        isPlayerAttacking = GetComponent<IsPlayerAttacking>();
+        playerMovement = GetComponent<PlayerMovement>();
     }
 
         void FixedUpdate()
@@ -30,7 +30,7 @@ public class PlayerState : MonoBehaviour
         }
 
         // Check If Player is Attacking
-        PlayerAttacking = isPlayerAttacking.ReturnPlayerAttacking();
+        PlayerAttacking = playerMovement.ReturnPlayerAttacking();
 
     }
 

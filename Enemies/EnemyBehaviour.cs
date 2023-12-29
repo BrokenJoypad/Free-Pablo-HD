@@ -8,6 +8,7 @@ public class EnemyBehaviour : MonoBehaviour
     private CheckAreaCollider checkAreaCollider;
     private EnemyStats stats;
 
+    private bool canMove = false;
     public bool MovingToPatrolTarget = false;
     public bool searchingForNewTarget = false;
     public Vector3 PatrolTarget;
@@ -36,16 +37,10 @@ public class EnemyBehaviour : MonoBehaviour
         searchTimer += Time.deltaTime;
         targetToMoveTowards = checkAreaCollider.ReturnTargetsInArea();
 
+        CheckCanMove();
         Patrol();
         MoveTowardsTarget();
 
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject != null)
-            searchTimer = 0f;
-            searchForNewPatrolTarget();
     }
 
     void MoveTowardsTarget()
@@ -64,7 +59,7 @@ public class EnemyBehaviour : MonoBehaviour
         }
         else
             rb.velocity = Vector3.Lerp(rb.velocity, Vector3.zero, 0.05f * Time.deltaTime);
-        checkMovingTowardsTarget();
+            checkMovingTowardsTarget();
     }
 
     void Patrol()
@@ -77,8 +72,8 @@ public class EnemyBehaviour : MonoBehaviour
             }
             else
             {
-                moveToPatrolTarget();
-                Debug.DrawLine(rb.transform.position, PatrolTarget, Color.blue);
+                    moveToPatrolTarget();
+                    Debug.DrawLine(rb.transform.position, PatrolTarget, Color.blue);
             }
 
         }
@@ -87,6 +82,25 @@ public class EnemyBehaviour : MonoBehaviour
             PatrolTarget = Vector3.zero;
             searchTimer = 0f;
             searchingForNewTarget = false;
+        }
+    }
+
+    void CheckCanMove()
+    {
+        if (Physics.Raycast(transform.position + new Vector3(0, 1, 0), transform.forward, out RaycastHit hit, 2f))
+        {
+            if (hit.rigidbody != null || hit.collider != null)
+            {
+                canMove = false;
+            }
+            else
+            {
+                canMove = true;
+            }
+        }
+        else
+        {
+            canMove = true;
         }
     }
 

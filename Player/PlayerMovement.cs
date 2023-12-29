@@ -9,14 +9,19 @@ public class PlayerMovement : MonoBehaviour
     [Header("Variables")]
     [SerializeField] private bool canMove = false;
     [SerializeField] private float MoveSpeed = 0f;
-    
-    
-    private float StoppingDistance = 0.5f;
+
+    [Header("Movement Statuses")]
+    [SerializeField] private bool isAttackingTarget = false;
+    [SerializeField] private bool ArrivedAtClickedTarget = false;
+
+
+
+    private float StoppingDistance = 2f;
     private Vector3 ClickedTargetPosition;
     private GameObject ClickedTargetGameObject;
     private Rigidbody rb;
     private GameCursor gameCursor;
-    private bool ArrivedAtClickedTarget = false;
+    
 
     void Start()
     {
@@ -39,10 +44,14 @@ public class PlayerMovement : MonoBehaviour
     void FixedUpdate()
     {
         MoveToClickedTarget();
-
-        if(ArrivedAtClickedTarget && ClickedTargetGameObject.layer == LayerMask.NameToLayer("Enemies"))
+        if(ArrivedAtClickedTarget && ClickedTargetGameObject != null && ClickedTargetGameObject.layer == LayerMask.NameToLayer("Enemies"))
         {
             Attack();
+            isAttackingTarget = true;
+        }
+        else
+        {
+            isAttackingTarget = false;
         }
     }
 
@@ -57,11 +66,10 @@ public class PlayerMovement : MonoBehaviour
             Vector3 movement = movementDirection * MoveSpeed * Time.fixedDeltaTime;
             rb.MovePosition(rb.position + movement);
             ArrivedAtClickedTarget = false;
-        }
-        else if(!canMove && distanceBetween.magnitude > StoppingDistance)
-        {
-            rb.velocity = Vector3.zero; // Stop the Rigidbody when close to the target
-            ArrivedAtClickedTarget = false;
+
+        } else if(distanceBetween.magnitude < StoppingDistance) {
+            ArrivedAtClickedTarget = true;
+            rb.velocity = Vector3.zero;
         }
 
     }
@@ -81,6 +89,12 @@ public class PlayerMovement : MonoBehaviour
     void Attack()
     {
         Debug.Log("Im attacking broooo");
+        isAttackingTarget = true;
+    }
+
+    public bool ReturnPlayerAttacking()
+    {
+        return isAttackingTarget;
     }
 
 
