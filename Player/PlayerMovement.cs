@@ -44,15 +44,17 @@ public class PlayerMovement : MonoBehaviour
     void FixedUpdate()
     {
         MoveToClickedTarget();
-        if(ArrivedAtClickedTarget && ClickedTargetGameObject != null && ClickedTargetGameObject.layer == LayerMask.NameToLayer("Enemies"))
-        {
-            Attack();
-            isAttackingTarget = true;
+
+        if (ClickedTargetGameObject != null && ArrivedAtClickedTarget){
+            IAttackable attackable = ClickedTargetGameObject.GetComponent<IAttackable>();
+
+            if (attackable != null)
+                Attack();
+                attackable.TakeDamage();
+            }else {
+                isAttackingTarget = false;
         }
-        else
-        {
-            isAttackingTarget = false;
-        }
+
     }
 
 
@@ -88,7 +90,6 @@ public class PlayerMovement : MonoBehaviour
 
     void Attack()
     {
-        Debug.Log("Im attacking broooo");
         isAttackingTarget = true;
     }
 
