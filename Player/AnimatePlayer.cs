@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AnimatePlayer : MonoBehaviour
 {
-    private PlayerState playerState;
+    private Player player;
     private Animator animator;
 
     private bool PlayerIsMoving = false;
@@ -12,14 +12,15 @@ public class AnimatePlayer : MonoBehaviour
 
     void Start()
     {
-        playerState = GetComponent<PlayerState>();
+        player = Player.Instance;
         animator = GetComponent<Animator>();
     }
 
     void Update()
     {
-        PlayerIsMoving = playerState.IsPlayerMoving();
-        PlayerIsAttacking = playerState.IsPlayerAttacking();
+        // For the sake of readability...
+        PlayerIsMoving = player.ReturnPlayerMoveState();
+        PlayerIsAttacking = player.ReturnPlayerAttackState();
 
         if(PlayerIsMoving){
             animator.SetBool("isMoving", true);

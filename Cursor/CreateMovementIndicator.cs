@@ -5,7 +5,7 @@ using UnityEngine;
 public class CreateMovementIndicator : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private GameObject Player;
+    [SerializeField] private Player player;
     [SerializeField] private GameObject movePrefab;
 
     [Header("Variables")]
@@ -19,6 +19,7 @@ public class CreateMovementIndicator : MonoBehaviour
     void Start()
     {
         gameCursor = GameCursor.Instance;
+        player = Player.Instance;
     }
 
     void Update()
@@ -29,7 +30,7 @@ public class CreateMovementIndicator : MonoBehaviour
         {
             if (playerTarget != null && playerTarget.name != "Environment__Ground")
             {
-                indicatorSpawnPosition = playerTarget.transform.position;
+                indicatorSpawnPosition = new Vector3(playerTarget.transform.position.x, 0, playerTarget.transform.position.z);
             }
             else
             {
@@ -45,7 +46,7 @@ public class CreateMovementIndicator : MonoBehaviour
             IndicatorSpawned = true;
         }
 
-        if (Vector3.Distance(Player.transform.position, indicatorSpawnPosition) < 0.5f)
+        if (Vector3.Distance(player.transform.position, indicatorSpawnPosition) < 0.5f)
         {
             if (IndicatorSpawned)
             {
