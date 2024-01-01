@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Player : MonoBehaviour
 {
@@ -25,7 +26,6 @@ public class Player : MonoBehaviour
 
     [Header("Player State")]
     [SerializeField] private bool isAlive = true;
-    [SerializeField] private bool canMove = false;
     [SerializeField] private bool isMoving = false;
     [SerializeField] private bool isAttackingTarget = false;
     [SerializeField] private bool ArrivedAtClickedTarget = false;
@@ -33,6 +33,7 @@ public class Player : MonoBehaviour
 
     public static Player Instance;
     private float StoppingDistance;
+    private NavMeshAgent navMeshAgent;
     private Vector3 ClickedTargetPosition;
     private GameObject ClickedTargetGameObject;
     private Rigidbody rb;
@@ -43,6 +44,7 @@ public class Player : MonoBehaviour
     {
         rb = gameObject.GetComponent<Rigidbody>();
         gameCursor = GameCursor.Instance;
+        navMeshAgent = GetComponent<NavMeshAgent>();
 
         if (Instance == null)
         {
@@ -57,21 +59,17 @@ public class Player : MonoBehaviour
 
     void Update()
     {   
-        CheckCanMove();
         
         if (Input.GetButton("LClick"))
         {
             ClickedTargetPosition = gameCursor.ReturnCursorPosition();
             ClickedTargetGameObject = gameCursor.GetHitGameObject();
-            rb.transform.LookAt(ClickedTargetPosition);
         }
-    }
 
-    void FixedUpdate()
-    {
         MoveToClickedTarget();
 
-        if (ClickedTargetGameObject != null && ArrivedAtClickedTarget){
+        if (ClickedTargetGameObject != null && ArrivedAtClickedTarget)
+        {
             IAttackable attackable = ClickedTargetGameObject.GetComponent<IAttackable>();
 
             if (attackable != null)
@@ -90,9 +88,10 @@ public class Player : MonoBehaviour
 
     void MoveToClickedTarget()
     {
-        Vector3 distanceBetween = ClickedTargetPosition - rb.position;
+        navMeshAgent.destination = ClickedTargetPosition;
+        rb.transform.LookAt(navMeshAgent.steeringTarget);
 
-        if(ClickedTargetGameObject != null && ClickedTargetGameObject.name == "Environment__Ground")
+        if (ClickedTargetGameObject != null && ClickedTargetGameObject.name == "Environment__Ground")
         {
             StoppingDistance = 0.1f;
         }
@@ -101,33 +100,20 @@ public class Player : MonoBehaviour
             StoppingDistance = 2f;
         }
 
-        if (canMove && distanceBetween.magnitude > StoppingDistance)
-        {
-            Vector3 movementDirection = distanceBetween.normalized;
-            Vector3 movement = movementDirection * MovementSpeed * Time.fixedDeltaTime;
-            rb.MovePosition(rb.position + movement);
-            isMoving = true;
-            ArrivedAtClickedTarget = false;
 
-        } else if(distanceBetween.magnitude < StoppingDistance) {
+        if (navMeshAgent.remainingDistance <= StoppingDistance)
+        {
             ArrivedAtClickedTarget = true;
             isMoving = false;
-            rb.velocity = Vector3.zero;
+        }
+        else
+        {
+            ArrivedAtClickedTarget = false;
+            isMoving = true;
         }
 
-    }
 
-    void CheckCanMove(){
-        if (Physics.Raycast(transform.position + new Vector3(0, 1, 0), transform.forward, out RaycastHit hit, 1f)) {
-            if (hit.rigidbody != null || hit.collider != null) {
-                canMove = false;
-                isMoving = false;
-            } else {
-                canMove = true;
-            }
-        } else {
-            canMove = true;
-        }
+
     }
 
     void Attack()

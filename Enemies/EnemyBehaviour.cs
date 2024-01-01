@@ -38,7 +38,7 @@ public class EnemyBehaviour : MonoBehaviour
         targetToMoveTowards = checkAreaCollider.ReturnTargetsInArea();
 
         CheckCanMove();
-        Patrol();
+        //Patrol();
         MoveTowardsTarget();
 
     }
@@ -122,8 +122,6 @@ public class EnemyBehaviour : MonoBehaviour
 
     void moveToPatrolTarget()
     {
-        Quaternion targetRotation = Quaternion.LookRotation(PatrolTarget - rb.transform.position);
-        rb.transform.rotation = Quaternion.Slerp(rb.transform.rotation, targetRotation, Time.deltaTime * 3f);
         Vector3 distanceBetween = PatrolTarget - rb.transform.position;
         if (distanceBetween.magnitude > 1f)
         {
@@ -149,6 +147,7 @@ public class EnemyBehaviour : MonoBehaviour
             MovingTowardsTarget = true;
         }
     }
+
 
     public bool returnSearchState()
     {
