@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyBehaviour : MonoBehaviour
 {
@@ -16,12 +17,31 @@ public class EnemyBehaviour : MonoBehaviour
     private float MaxSearchRange;
     private float MoveSpeed;
     private float searchTimer = 0f;
-    private float timeBeforeSelectingNewTarget = 2f;
+    private float NoTargetFoundTimer = 0f; // used for checking how many seconds it's been since we last found anything in the area collider.
+    private float timeBeforeSelectingNewTarget = 3f;
+    private NavMeshAgent navMeshAgent;
+    private bool canStartPatrol = true;
 
     private bool MovingTowardsTarget = false;
     [SerializeField] private GameObject targetToMoveTowards;
 
+    // check if we have a target in our area
+    // if we do, store it's position and move towards it.
+    // if targets in area has been null for more than let's say 3 seconds..
+    // pick a random target within our search range
+    // move towards it.
 
+    // Start null timer
+    // if nulltimer == 3f and targets in area == null
+    // PATROL 
+        //  select a random target in area
+        //  COROUTINE? wait 2s, set is searching to true
+        //  rotate towards the patrol target
+        //  move towards it
+        //  when arrived, set null timer to 0.
+    // else if targets in area != null 
+    // MOVE TOWARDS TARGET
+        // set navmesh position to the target in area.
 
     void Start()
     {
@@ -30,124 +50,55 @@ public class EnemyBehaviour : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         MaxSearchRange = stats.ReturnBaseAttackRange();
         MoveSpeed = stats.ReturnBaseMovementSpeed();
+        navMeshAgent = GetComponent<NavMeshAgent>();
     }
 
     void Update()
     {
         searchTimer += Time.deltaTime;
+        NoTargetFoundTimer += Time.deltaTime;
         targetToMoveTowards = checkAreaCollider.ReturnTargetsInArea();
 
-        CheckCanMove();
-        //Patrol();
-        MoveTowardsTarget();
-
-    }
-
-    void MoveTowardsTarget()
-    {
-
-        if (targetToMoveTowards != null)
+        if (canStartPatrol)
         {
-            Vector3 targetPosition = targetToMoveTowards.transform.position;
-            targetPosition.y = rb.transform.position.y;
-            rb.transform.LookAt(targetPosition);
-
-            // Calculate the movement direction and then move towards the target
-            Vector3 moveDirection = (targetPosition - rb.transform.position).normalized;
-            rb.velocity = moveDirection * MoveSpeed;
-            Debug.DrawLine(rb.transform.position, targetPosition, Color.red);
+            Patrol();
         }
-        else
-            rb.velocity = Vector3.Lerp(rb.velocity, Vector3.zero, 0.05f * Time.deltaTime);
-            checkMovingTowardsTarget();
+
+        if(targetToMoveTowards != null)
+        {
+            canStartPatrol = false;
+            navMeshAgent.destination = targetToMoveTowards.transform.position;
+        }
+
+
     }
 
     void Patrol()
     {
-        if (checkAreaCollider.ReturnTargetsInArea() == null)
+        if (!searchingForNewTarget && navMeshAgent.remainingDistance == 0f && canStartPatrol)
         {
-            if (PatrolTarget == Vector3.zero)
-            {
-                searchForNewPatrolTarget();
-            }
-            else
-            {
-                    moveToPatrolTarget();
-                    Debug.DrawLine(rb.transform.position, PatrolTarget, Color.blue);
-            }
-
-        }
-        else
-        {
-            PatrolTarget = Vector3.zero;
-            searchTimer = 0f;
-            searchingForNewTarget = false;
-        }
-    }
-
-    void CheckCanMove()
-    {
-        if (Physics.Raycast(transform.position + new Vector3(0, 1, 0), transform.forward, out RaycastHit hit, 2f))
-        {
-            if (hit.rigidbody != null || hit.collider != null)
-            {
-                canMove = false;
-            }
-            else
-            {
-                canMove = true;
-            }
-        }
-        else
-        {
-            canMove = true;
-        }
-    }
-
-    void searchForNewPatrolTarget()
-    {
-        if (searchTimer <= timeBeforeSelectingNewTarget)
-        {
+            StartCoroutine(GetNewPatrolTarget());
             searchingForNewTarget = true;
-            PatrolTarget = Vector3.zero;
+            canStartPatrol = false;
         }
         else
         {
-            Vector2 randomCircle = Random.insideUnitCircle * MaxSearchRange;
-            PatrolTarget = new Vector3(randomCircle.x + rb.transform.position.x, rb.transform.position.y, randomCircle.y + rb.transform.position.z);
+            navMeshAgent.destination = PatrolTarget;
             searchingForNewTarget = false;
-            searchTimer = 0f;
-        }
-    }
-
-    void moveToPatrolTarget()
-    {
-        Vector3 distanceBetween = PatrolTarget - rb.transform.position;
-        if (distanceBetween.magnitude > 1f)
-        {
-            rb.velocity = distanceBetween.normalized * MoveSpeed;
-            MovingToPatrolTarget = true;
-        }
-        else
-        {
-            PatrolTarget = Vector3.zero;
             searchTimer = 0;
-            MovingToPatrolTarget = false;
+            canStartPatrol = true;
         }
+
     }
 
-    void checkMovingTowardsTarget()
+    IEnumerator GetNewPatrolTarget()
     {
-        if (rb.velocity == Vector3.zero)
-        {
-            MovingTowardsTarget = false;
-        }
-        else
-        {
-            MovingTowardsTarget = true;
-        }
+        Vector2 randomCircle = Random.insideUnitCircle * MaxSearchRange;
+        PatrolTarget = new Vector3(randomCircle.x + rb.transform.position.x, rb.transform.position.y, randomCircle.y + rb.transform.position.z);
+        searchingForNewTarget = true;
+        yield return new WaitForSeconds(timeBeforeSelectingNewTarget);
+        canStartPatrol = true;
     }
-
 
     public bool returnSearchState()
     {
@@ -159,6 +110,8 @@ public class EnemyBehaviour : MonoBehaviour
         return MovingTowardsTarget;
     }
 
-
-
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawSphere(PatrolTarget, 0.4f);
+    }
 }
